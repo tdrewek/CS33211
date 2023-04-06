@@ -1,47 +1,33 @@
 #include "table.h"
 
-int main(int argc, char *argv[]) {
-    int shm_fd;
-    void *table;
-    sem_t *mutex, *items;
-
-    // Open shared memory and semaphores
-    shm_fd = shm_open("table", O_CREAT | O_RDWR, 0666);
-    if (shm_fd == -1) {
-        perror("shm_open");
-        exit(1);
+// consumer code
+int main() {
+    int shared = shm_open("/Shared_memory", O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
+    if (shared == -1){
+        printf("shm_open() ERROR");
     }
-    table = mmap(0, SHARED_MEM_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
-    if (table == MAP_FAILED) {
-        perror("mmap");
-        exit(1);
+    if (ftruncate(shared, sizeof(struct table)) == -1){
+        printf("ftruncate() ERROR");
+    } else {
+        ftruncate(shared, sizeof(struct table));
     }
-    mutex = sem_open("mutex", O_CREAT, 0666, 1);
-    items = sem_open("items", O_CREAT, 0666, 0);
-    if (mutex == SEM_FAILED || items == SEM_FAILED) {
-        perror("sem_open");
-        exit(1);
+    struct table *consumer;
+    consumer = mmap(0, sizeof(struct table), PROT_READ|PROT_WRITE, MAP_SHARED, shared, 0); // pointer to shared buffer
+    if (consumer == MAP_FAILED){
+        printf("mmap() ERROR");
     }
 
-    // Consume items from the table
-    int consumed_items = 0;
-    while (consumed_items < NUM_ITEMS) {
-        sem_wait(items); // wait for an item to be available on the table
-        sem_wait(mutex); // acquire the mutex
-
-        // consume an item from the table
-        int item = ((int *)table)[consumed_items % TABLE_SIZE];
-        printf("Consumer: Consuming item %d\n", item);
-        consumed_items++;
-
-        sem_post(mutex); // release the mutex
+    int item = 0;
+    while(item < MAX_ITEMS) {
+        while(consumer->buffer[0] == 0 && consumer->buffer[1] == 0); // busy
+        sleep(1);
+        sem_wait(&consumer->usedSpaces);
+        for (int i = 0; i < TABLE_SIZE; ++i) {
+            printf("consumer removed %d\n", consumer->buffer[i]);
+            consumer->buffer[i] = 0; // create empty space
+        }
+        ++item;
+        sem_post(&consumer->emptySpaces);
     }
-
-    // Clean up
-    sem_close(mutex);
-    sem_close(items);
-    shm_unlink("table");
-    sem_unlink("mutex");
-    sem_unlink("items");
     return 0;
 }

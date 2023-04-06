@@ -1,67 +1,48 @@
 #include "table.h"
 
-void *producer(void *arg) {
-    Table *table = (Table *)arg;
-    int item = 0;
-
-    while (1) {
-        // Produce item
-        item++;
-        printf("Produced item %d\n", item);
-
-        // Acquire empty semaphore
-        sem_wait(empty);
-
-        // Acquire mutex semaphore
-        sem_wait(mutex);
-
-        // Put item on table
-        table->buffer[table->in] = item;
-        table->in = (table->in + 1) % 2;
-        printf("Put item %d on table\n", item);
-
-        // Release mutex semaphore
-        sem_post(mutex);
-
-        // Release full semaphore
-        sem_post(full);
-
-        // Wait before producing another item
-        sleep(1);
-    }
-}
-
+// producer code
 int main() {
-    // Initialize semaphores
-    empty = sem_open("/empty", O_CREAT, 0666, 2);
-    full = sem_open("/full", O_CREAT, 0666, 0);
-    mutex = sem_open("/mutex", O_CREAT, 0666, 1);
+    srand(time(NULL));
+    int shared = shm_open("/Shared_memory", O_CREAT | O_RDWR, S_IRUSR | S_IWUSR); // shared memory location
+    if (shared == -1){
+        printf("shm_open() ERROR");
+    }
+    if (ftruncate(shared, sizeof(struct table)) == -1){
+        printf("ftruncate() ERROR");
+    } else {
+        ftruncate(shared, sizeof(struct table));
+    }
+    struct table *producer;
+    producer = mmap(0, sizeof(struct table), PROT_READ|PROT_WRITE, MAP_SHARED, shared, 0); // pointer to shared buffer
+    if (producer == MAP_FAILED){
+        printf("mmap() ERROR");
+    }
 
-    // Create shared memory
-    shm_fd = shm_open("/table", O_CREAT | O_RDWR, 0666);
-    ftruncate(shm_fd, SHARED_MEM_SIZE);
-    table = mmap(NULL, SHARED_MEM_SIZE, PROT_WRITE, MAP_SHARED, shm_fd, 0);
+    // initializing the semaphores
+    sem_init(&producer->emptySpaces, 1, TABLE_SIZE); // setting empty spaces to 2
+    sem_init(&producer->usedSpaces, 1, 0); // setting used spaces to 0
 
-    // Initialize table
-    table->in = 0;
-    table->out = 0;
+    // setting the shared array buffer elements to 0 to show they are empty
+    for (int i = 0; i < TABLE_SIZE; ++i){
+        producer->buffer[i] = 0;
+    }
 
-    // Create producer thread
-    pthread_t prod_thread;
-    pthread_create(&prod_thread, NULL, producer, (void *)table);
+    int item = 0;
+    while (item < MAX_ITEMS){
+        while (producer->buffer[0] != 0 && producer->buffer[1] != 0); // busy while buffer has items
+        sleep(1);
+        sem_wait(&producer->emptySpaces);
 
-    // Wait for producer thread to finish
-    pthread_join(prod_thread, NULL);
-
-    // Clean up
-    munmap(table, SHARED_MEM_SIZE);
-    shm_unlink("/table");
-    sem_close(empty);
-    sem_close(full);
-    sem_close(mutex);
-    sem_unlink("/empty");
-    sem_unlink("/full");
-    sem_unlink("/mutex");
-
+        for (int i = 0; i < TABLE_SIZE; ++i){ // produces 2 items
+            item = rand() % 100 + 1; // get unique item value
+            if (item == 0) { // if somehow 0 is randomly generated, sets to 1
+                item = 1;
+            }
+            producer->buffer[i] = item;
+            printf("producer produced %d\n", item);
+        }
+        ++item;
+        sem_post(&producer->usedSpaces);
+    }
     return 0;
 }

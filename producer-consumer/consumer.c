@@ -17,16 +17,17 @@ int main() {
         printf("mmap() ERROR");
     }
 
-    int item = 0;
-    while(item < MAX_ITEMS) {
+    int itemSets = 0;
+    while(itemSets < MAX_ITEM_SETS) {
+        
         while(consumer->buffer[0] == 0 && consumer->buffer[1] == 0); // busy
-        sleep(1);
-        sem_wait(&consumer->usedSpaces);
+            sleep(1);
+            sem_wait(&consumer->usedSpaces);
         for (int i = 0; i < TABLE_SIZE; ++i) {
             printf("consumer removed %d\n", consumer->buffer[i]);
             consumer->buffer[i] = 0; // create empty space
         }
-        ++item;
+        ++itemSets;
         sem_post(&consumer->emptySpaces);
     }
     return 0;

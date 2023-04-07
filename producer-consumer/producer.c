@@ -27,21 +27,21 @@ int main() {
         producer->buffer[i] = 0;
     }
 
-    int item = 0;
-    while (item < MAX_ITEMS){
-        while (producer->buffer[0] != 0 && producer->buffer[1] != 0); // busy while buffer has items
-        sleep(1);
-        sem_wait(&producer->emptySpaces);
-
-        for (int i = 0; i < TABLE_SIZE; ++i){ // produces 2 items
-            item = rand() % 100 + 1; // get unique item value
-            if (item == 0) { // if somehow 0 is randomly generated, sets to 1
-                item = 1;
+    int itemSets = 0;
+    while (itemSets < MAX_ITEM_SETS){
+        while (producer->buffer[0] != 0 && producer->buffer[1] != 0); // busy while buffer has itemss
+            sleep(1);
+            sem_wait(&producer->emptySpaces);
+        int itemValue;
+        for (int i = 0; i < TABLE_SIZE; ++i){ // produces 2 itemss
+            itemValue = rand() % 100 + 1; // get unique items value
+            if (itemValue == 0) { // if somehow 0 is randomly generated, sets to 1
+                itemValue = 1;
             }
-            producer->buffer[i] = item;
-            printf("producer produced %d\n", item);
+            producer->buffer[i] = itemValue;
+            printf("producer added %d\n", itemValue);
         }
-        ++item;
+        ++itemSets;
         sem_post(&producer->usedSpaces);
     }
     return 0;

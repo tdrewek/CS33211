@@ -18,7 +18,7 @@ const int MAX_ITEMS = 20;
 const int TABLE_SIZE = 2;
 
 struct table {
-    int buffer[TABLE_SIZE]; // shared array buffer for the two programs to use in synchronicity
+    int buffer[2]; // shared array buffer for the two programs to use in synchronicity
     sem_t emptySpaces; // the current amount of empty spaces on the table
     sem_t usedSpaces; // the current amount of used spaces on the table
 };

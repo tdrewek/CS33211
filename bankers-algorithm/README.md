@@ -4,14 +4,18 @@ A simple C program to demonstrate the solution to the popular "producer-consumer
 
 ## Explanation
 
-Topic: Producer-Consumer Problem
+Topic: Banker’s Algorithm for deadlock avoidance.
+
+Considering a system with five processes P0 through P4 and three resources of type A, B, C. Resource type A has 10 instances, B has 5 instances and type C has 7 instances. Suppose at time t0 following snapshot of the system has been taken:
 
 ![image](https://user-images.githubusercontent.com/112535869/235267660-4e30a882-728f-4824-b87b-63fa5fe7a25e.png)
 
+## Problem
+Is the system in a safe state? If Yes, then what is the safe sequence?
 
 ## Disclaimer
 
-As of right now, this program is only a demonstration of my knowledge on semaphores/shared-memory-buffers for a class homework assignment. In the future, I plan to revisit this project increasing the complexity and usability. Thank you!
+As of right now, this program is only a demonstration of my knowledge on deadlock avoidance for a class homework assignment. In the future, I plan to revisit this project increasing the complexity and usability. Thank you!
 
 ## Installation/Download
 

@@ -32,7 +32,7 @@ Or you may choose to download the zip file [here](https://github.com/tdrewek/CS3
 
 Open a terminal/console and navigate to the folder "CS33211" if cloned or "CS33211-main" if downloaded. Once in the CS33211 directory, navigate to the "bankers-algorithm" directory.
 
-Once in the "bankers-algorithm" directory, you can run the program by running the following commands as shown below:
+Once in the "bankers-algorithm" directory, you can run the program using following commands as shown below:
 
 ```
 g++ banker.cpp -o banker

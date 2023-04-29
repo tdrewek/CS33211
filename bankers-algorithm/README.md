@@ -32,17 +32,44 @@ Or you may choose to download the zip file [here](https://github.com/tdrewek/CS3
 
 Open a terminal/console and navigate to the folder "CS33211" if cloned or "CS33211-main" if downloaded. Once in the CS33211 directory, navigate to the "bankers-algorithm" directory.
 
-Once in the "bankers-algorithm" directory, you can run the program by   as shown below:
+Once in the "bankers-algorithm" directory, you can run the program by running the following commands as shown below:
 
 ```
-
+g++ banker.cpp -o banker
+./banker
 ```
 
 ## Example
 
-
-
 ```
+mocha@Ubuntu2:~/Desktop/Github/CS33211/bankers-algorithm$ g++ banker.cpp -o banker
+mocha@Ubuntu2:~/Desktop/Github/CS33211/bankers-algorithm$ ./banker
 
+Allocated Resource Table:
+0 1 0 
+2 0 0 
+3 0 2 
+2 1 1 
+0 0 2 
+
+Max Resource Table:
+7 5 3 
+3 2 2 
+9 0 2 
+2 2 2 
+4 3 3 
+
+Available Resources:
+3 3 2 
+
+Needed Resources:
+7 4 3 
+1 2 2 
+6 0 0 
+0 1 1 
+4 3 1 
+
+Safe sequence is: 
+ P1 to P3 to P4 to P0 to P2
 ```
 
